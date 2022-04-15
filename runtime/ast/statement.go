@@ -36,7 +36,12 @@ type ReturnStatement struct {
 	Range
 }
 
+var _ Element = &ReturnStatement{}
 var _ Statement = &ReturnStatement{}
+
+func (*ReturnStatement) ElementType() ElementType {
+	return ElementTypeReturnStatement
+}
 
 func (*ReturnStatement) isStatement() {}
 
@@ -82,7 +87,12 @@ type BreakStatement struct {
 	Range
 }
 
+var _ Element = &BreakStatement{}
 var _ Statement = &BreakStatement{}
+
+func (*BreakStatement) ElementType() ElementType {
+	return ElementTypeBreakStatement
+}
 
 func (*BreakStatement) isStatement() {}
 
@@ -117,7 +127,12 @@ type ContinueStatement struct {
 	Range
 }
 
+var _ Element = &ContinueStatement{}
 var _ Statement = &ContinueStatement{}
+
+func (*ContinueStatement) ElementType() ElementType {
+	return ElementTypeContinueStatement
+}
 
 func (*ContinueStatement) isStatement() {}
 
@@ -162,7 +177,12 @@ type IfStatement struct {
 	StartPos Position `json:"-"`
 }
 
+var _ Element = &IfStatement{}
 var _ Statement = &IfStatement{}
+
+func (*IfStatement) ElementType() ElementType {
+	return ElementTypeIfStatement
+}
 
 func (*IfStatement) isStatement() {}
 
@@ -253,7 +273,12 @@ type WhileStatement struct {
 	StartPos Position `json:"-"`
 }
 
+var _ Element = &WhileStatement{}
 var _ Statement = &WhileStatement{}
+
+func (*WhileStatement) ElementType() ElementType {
+	return ElementTypeWhileStatement
+}
 
 func (*WhileStatement) isStatement() {}
 
@@ -310,7 +335,12 @@ type ForStatement struct {
 	StartPos   Position `json:"-"`
 }
 
+var _ Element = &ForStatement{}
 var _ Statement = &ForStatement{}
+
+func (*ForStatement) ElementType() ElementType {
+	return ElementTypeForStatement
+}
 
 func (*ForStatement) isStatement() {}
 
@@ -381,7 +411,12 @@ type EmitStatement struct {
 	StartPos             Position `json:"-"`
 }
 
+var _ Element = &EmitStatement{}
 var _ Statement = &EmitStatement{}
+
+func (*EmitStatement) ElementType() ElementType {
+	return ElementTypeEmitStatement
+}
 
 func (*EmitStatement) isStatement() {}
 
@@ -432,7 +467,12 @@ type AssignmentStatement struct {
 	Value    Expression
 }
 
+var _ Element = &AssignmentStatement{}
 var _ Statement = &AssignmentStatement{}
+
+func (*AssignmentStatement) ElementType() ElementType {
+	return ElementTypeAssignmentStatement
+}
 
 func (*AssignmentStatement) isStatement() {}
 
@@ -489,7 +529,12 @@ type SwapStatement struct {
 	Right Expression
 }
 
+var _ Element = &SwapStatement{}
 var _ Statement = &SwapStatement{}
+
+func (*SwapStatement) ElementType() ElementType {
+	return ElementTypeSwapStatement
+}
 
 func (*SwapStatement) isStatement() {}
 
@@ -541,7 +586,12 @@ type ExpressionStatement struct {
 	Expression Expression
 }
 
+var _ Element = &ExpressionStatement{}
 var _ Statement = &ExpressionStatement{}
+
+func (*ExpressionStatement) ElementType() ElementType {
+	return ElementTypeExpressionStatement
+}
 
 func (*ExpressionStatement) isStatement() {}
 
@@ -586,7 +636,12 @@ type SwitchStatement struct {
 	Range
 }
 
+var _ Element = &SwitchStatement{}
 var _ Statement = &SwitchStatement{}
+
+func (*SwitchStatement) ElementType() ElementType {
+	return ElementTypeSwitchStatement
+}
 
 func (*SwitchStatement) isStatement() {}
 

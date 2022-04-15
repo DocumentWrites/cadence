@@ -29,6 +29,12 @@ type Block struct {
 	Range
 }
 
+var _ Element = &Block{}
+
+func (*Block) ElementType() ElementType {
+	return ElementTypeBlock
+}
+
 func (b *Block) IsEmpty() bool {
 	return len(b.Statements) == 0
 }
@@ -97,6 +103,12 @@ type FunctionBlock struct {
 	Block          *Block
 	PreConditions  *Conditions `json:",omitempty"`
 	PostConditions *Conditions `json:",omitempty"`
+}
+
+var _ Element = &FunctionBlock{}
+
+func (*FunctionBlock) ElementType() ElementType {
+	return ElementTypeFunctionBlock
 }
 
 func (b *FunctionBlock) IsEmpty() bool {
