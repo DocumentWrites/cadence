@@ -1,81 +1,72 @@
 ---
-title: 1. First Steps
+archived: false
+draft: false
+title: 01 web3 basics
+description: In this tutorial, we will introduce the basics of how applications work in web3
+date: 2022-04-24
+meta:
+  keywords:
+    - web3
+    - web2
+    - blockchain
+    - Flow
+    - cadence
+    - smart contract
+    - transaction
+tags: 
+  - web3
+  - blockchain
+  - cadence
+  - smart contract
+  - transaction
+socialImageTitle: web3 basics
+socialImageDescription: Learn the basics of how applications work in web3
 ---
 
-In this tutorial, we will learn how to use smart contracts, switch accounts, and view account state.
+## Final outcome
 
-## What is Cadence?
+After completing this tutorial, you will be familiar with the the basic concepts of web3 architecture
 
----
+## Pre-requisites
 
-Cadence is a new smart contract programming language for use on the Flow Blockchain.
-Cadence introduces new features to smart contract programming that help developers ensure that their code is safe, secure, clear, and approachable. Some of these features are:
+This is a basic tutorial and has no prerequisites
 
-- Type safety and a strong static type system
-- Resource-oriented programming, a new paradigm that pairs linear types with object capabilities to create a secure and declarative model for digital ownership
-  by ensuring that resources (and their associated assets) can only exist in one location at a time, cannot be copied, and cannot be accidentally lost or deleted
-- Built-in pre-conditions and post-conditions for functions and [transactions](/cadence/language/transactions/)
-- The utilization of capability-based security, which enforces access control by requiring that access to objects
-  is restricted to only the owner and those who have a valid reference to the object
 
-Please see the [Cadence introduction](/cadence/) for more information about the high level design of the language.
+## Steps
 
-## What is the Flow Developer Playground?
 
----
+### Where does the code of a smart contract run?
 
-The [Flow Playground](https://play.onflow.org) includes
-an in-browser editor and emulator to experiment with Flow.
-Using the Flow Playground, you can write Cadence smart contracts,
-deploy them to a local Flow emulated blockchain, and submit transactions.
+Smart contract code runs in a blockchain in a decentralized way. But what does that even mean? Developers new to web3 often find it a very weird explanation. Code needs to run on a specific computer, right? True! The short answer is that the code runs on all the computers of the blockchain network.
 
-The Flow Playground should be compatible with any standard web browser,
-but we recommend that you use Google Chrome with it,
-because it has been tested and optimized for only the Chrome browser so far.
+The long answer involves us looking at how read/write operations are done in web2 vs web3. But first, we need to understand what a blockchain actually is.
 
-<!-- If you encounter issues using the Flow Developer Playground, see the [Playground Manual](doc:playground-manual) or [Debugging](doc:debugging) for help. -->
+A Blockchain network is a distributed network of computers. Each computer runs blockchain software such as Flow. The computers all share the same data and state. Consistency is maintained through a consensus mechanism.
 
-## Getting to know the Playground
+![Traditional web2 client-server structure](./img/web2.svg)
 
-The Playground contains everything you need to get familiar
-with deploying Cadence smart contracts and interacting with transaction and scripts.
+### Reading data from a blockchain
 
-The Playground comes pre-loaded with contract and transaction templates
-that correspond to each of the tutorials in the docs site.
-To load the contracts from a specific tutorial, click the "Examples" link at the top of the Playground.
-This opens up a menu with each tutorial.
+To read data from the blockchain, you query one computer or node on the network and ask it to read data from a specific smart contract.
 
-When you click on one of these links, the tutorial will open in a new tab
-and the contracts, transactions, and scripts will be loaded into the templates in the Playground for you to use.
+To do this, you can run your own node or use a Mode Provider API Service.
 
-## Accounts and Contracts
+### Writing data to a blockchain 
 
-The Accounts section on the left side of the screen is where the active accounts are listed and selected.
-An account can have a smart contract deployed to it, which will be covered later.
-You can click on an account tab to view the contract that is associated with that account in the main editor.
+ ![web3 - Writing data to the blockchain](./img/web3-write.svg) 
 
-<Img src="https://storage.googleapis.com/flow-resources/documentation-assets/cadence-tuts/playground-accounts.png" />
+Writing data to the blockchain is a little bit more complicated. It is done via transactions to the network. These transactions describe which smart contract you want to modify and which function you want to execute.  Transactions may also include any arguments and/or cryptocurrency being sent to the function. 
 
-When you have Cadence code open in the account editor that contains a contract,
-you can click the deploy button in the top-right of the screen to deploy that contract to the currently selected account.
+The transaction will then be signed and sent to the Flow network. Signing transactions in web3 is somewhat similar to API keys in web2. It proves who you are and what permissions you have.
 
-![Deploy Contract](deploybox.png)
+Transactions are sent to specific nodes (i.e Individual computers running the flow software). This receiving node will then relay your transaction to theh other flow nodes, some of which are miners.
 
-After a few seconds, you should see a message in the console confirming that the contract was deployed.
-You should also see the name of the contract show up in the tab for that account, indicating the account now has that contract deployed to it.
+Miners receive your transaction and store it in a bucket/waitinglist called a transaction pool. A transaction pool is a group of transactions ready to be added to the blockchain. The miner then runs all the transactions in its pool. 
 
-You can also select transactions and scripts from the left selection menu and submit them to interact with your deployed smart contracts,
-which will be covered in the Hello World tutorial.
+Transactions are run one by one, taking a transaction, executing the function of a smart contract, and modifying the state of the blockchain. The miner node does this over and over until it has run through all the transactions in its pool. All miners do this at the same time. This is what we mean when we say that smart contract code runs in a decentralized way.
 
-This is just a small set of the things you can do with the Playground.
-If you would like a more detailed explanation of the different Playground features, look at the Playground Manual.
+It Is important to note that each miner has a different set or order of transactions. This means that the final state of the blockchain is not yet certain. Only after a single miner has "solved" the block will its set or order of transactions be accepted by the network as a whole. Only then will the transactions be "fully confirmed" and added to the blockchain.
 
-## Resources
+## Next Steps
 
-Each tutorial in this package uses several files containing transactions, contracts, and scripts.
-All the code you need will be provided in the text of the tutorials for you to copy and paste,
-or you can use the pre-generated tutorial setups in the Playground.
-
-## Say Hello, World!
-
-Now that you have the Flow Developer Playground running, you can create a smart contract for Flow!
+[Cadence Tutorial 2](https://docs.onflow.org/)
