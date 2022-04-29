@@ -1,0 +1,442 @@
+---
+archived: false
+draft: false
+title: 02 Creating and interacting with resources
+description: In this tutorial, we will learn how to create and interact with resources in Cadence.
+date: 2022-04-29
+meta:
+  keywords:
+    - article
+    - Flow
+    - cadence
+    - smart contract
+    - transaction
+    - resource
+tags: 
+  - reference
+  - cadence
+  - smart contract
+  - transaction
+  - resource
+socialImageTitle: Creating and interacting with resources
+socialImageDescription: In this tutorial, we will learn how to create and interact with resources in Cadence.
+---
+
+## Final outcome
+
+![Hello World Smart Contract](final-outcome.png)
+
+## Learning expectations
+
+After this tutorial, you will be able to create and interact with resources in Cadence.
+
+## Pre-requisites
+
+In order to follow along with this tutorial, you need to be familiar with [Tutorial 1](/cadence/tutorial/01-first-steps-Hello-World.mdx) which covers creating and deploying smart contracts in Cadence.
+
+## Steps
+
+### Creating a resource
+
+In this tutorial, we are going to get some practice with an example that uses **[resources](/cadence/language/resources/)**,
+one of the defining features in Cadence. A resource is a composite type like a struct or a class, but with some special rules.
+
+<Callout type="info">
+
+Open the Account `0x02` tab with file named `HelloWorldResource.cdc`. <br />
+`HelloWorldResource.cdc` should contain the following code:
+
+</Callout>
+
+```cadence:title=HelloWorldResource.cdc
+pub contract HelloWorld {
+
+  // Declare a resource that only includes one function.
+  pub resource HelloAsset {
+    // A transaction can call this function to get the "Hello, World!"
+    // message from the resource.
+    pub fun hello(): String {
+      return "Hello, World!"
+    }
+  }
+
+  init() {
+    // Use the create built-in function to create a new instance
+    // of the HelloAsset resource
+    let newHello <- create HelloAsset()
+
+    // We can do anything in the init function, including accessing
+    // the storage of the account that this contract is deployed to.
+    //
+    // Here we are storing the newly created HelloAsset resource
+    // in the private account storage
+    // by specifying a custom path to the resource
+    // Make sure the path is specific to avoid path collision!
+    self.account.save(<-newHello, to: /storage/HelloAssetTutorial)
+
+    log("HelloAsset created and stored")
+  }
+}
+```
+
+<Callout type="info">
+
+Deploy this code to account `0x02` using the `Deploy` button.
+
+</Callout>
+
+This is another example of what we can do with a contract.
+Cadence can declare type definitions within deployed contracts.
+A type definition is simply a description of how a particular set of data is organized.
+It isn't a copy of that data on its own. 
+Any account can import these definitions and use them to create an object that follows that definition or to
+interact with other objects of those types.
+
+This contract that we just deployed declares a definition for the `HelloAsset` resource.
+
+Let's walk through this contract, starting with the resource. Resources are one of the most important things
+that Cadence introduces to the smart contract design experience:
+
+```cadence
+pub resource HelloAsset {
+    pub fun hello(): String {
+        return "Hello, World!"
+    }
+}
+```
+
+Resources are a composite type similar to a struct or a class because they can have any number of fields or functions within them.
+The difference is how code is allowed to interact with them.
+
+- Each instance of a resource can only exist in exactly one location and cannot be copied.
+  Here, location refers to account storage, a temporary variable in a function, a storage field in a contract, etc.
+- Resources must be explicitly moved from one location to another when accessed.
+- Resources also cannot go out of scope at the end of function execution.
+  They must be explicitly stored somewhere or destroyed.
+
+These characteristics make it impossible to accidentally lose a resource from a coding mistake.
+
+Resources are useful when you want to model direct ownership.
+Traditional structs or classes from other conventional programming languages
+are not an ideal way to represent ownership because they can be *copied*.
+This means a coding error can easily result in creating multiple copies of the same asset,
+which breaks the scarcity requirements needed for these assets to have real value.
+We have to consider loss and theft at the scale of a house, a car, or a bank account with millions of dollars, or a horse.
+Resources, in turn, solve this problem by making creation, destruction, and movement of assets explicit.
+
+```cadence
+init() {
+// ...
+```
+
+This example also declares an `init()` function. All composite types like contracts, resources, and structs can have an optional `init()` function
+that only runs when the object is initially created. Cadence requires that all fields must be explicitly initialized,
+so if the object has any fields, this function has to be used to initialize them.
+
+Contracts also have read and write access to the storage of the account that they are deployed to
+by using the built-in [`self.account`](/cadence/language/contracts) object.
+This is an [`AuthAccount` object](/cadence/language/accounts/#authaccount)
+that gives them access to many different functions to interact with the private storage of the account.
+
+In this contract's `init` function, the contract uses the `create` keyword
+to create an instance of the `HelloAsset` type and saves it to a local variable.
+To create a new resource object, we use the `create` keyword
+followed by an invocation of the name of the resource with any `init()` arguments.
+
+**A resource can only be created in the scope that it is defined in.**
+
+This prevents anyone from being able to create arbitrary amounts of resource objects that others have defined.
+
+#### The Move Operator (`<-`)
+
+```cadence
+let newHello <- create HelloAsset()
+```
+
+Here we use the `<-` symbol. [This is the move operator](/cadence/language/resources/#themoveoperator).
+The move operator `<-` replaces the assignment operator `=` in assignments that involve resources.
+To make the assignment of resources explicit, the move operator `<-` must be used when:
+
+- the resource is the initial value of a constant or variable,
+- the resource is moved to a different variable in an assignment,
+- the resource is moved to a function as an argument
+- the resource is returned from a function.
+
+When a resource is moved, the old location is invalidated, and the object moves into the context of the new location.
+
+So if I have a resource in `first_resource`, like so:
+
+```cadence
+// Note the `@` symbol to specify that it is a resource
+let first_resource: @AnyResource = create AnyResource()
+```
+
+and I want to assign it to a new variable, `second_resource`,
+after I do the assignment, `first_resource` is invalid because the underlying resource has been moved to the new variable.
+
+```cadence
+var second_resource <- first_resource
+// first_resource is now invalid. Nothing can be done with it
+```
+
+Regular assignments of resources are not allowed because assignments only copy the value.
+Resources can only exist in one location at a time, so movement must be explicitly shown in the code.
+
+
+
+Back to our `init` function, after creating the `HelloAsset` resource,
+it uses the `AuthAccount.save` function to store the resource in the account storage.
+
+```cadence
+self.account.save(<-newHello, to: /storage/HelloAssetTutorial)
+```
+
+A contract can refer to its member functions and fields with the keyword `self`.
+All contracts have access to the storage of the account where they are deployed and can access that `AuthAccount` object with `self.account`.
+
+`AuthAccount` objects have many different methods that are used to interact with account storage.
+You can see the documentation for all of these in the [account section of the language reference](/cadence/language/accounts/#authaccount).
+The `save` method saves an object to account storage. The type parameter for the object type
+is contained in `<>` to indicate what type the stored object is.
+It can also be inferred from the argument's type, but it is often safe to be explicit anyway.
+
+The first parameter to `save` is the object that is being stored, and the `to` parameter is the path that the object is being stored at.
+The path must be a storage path, i.e., only the domain `/storage/` is allowed as the `to` parameter.
+
+If there is already an object stored under the given path, the program aborts.
+Remember, the Cadence type system ensures that a resource can never be accidentally lost.
+When moving a resource to a field, into an array, into a dictionary, or into storage,
+there is the possibility that the location already contains a resource.
+Cadence forces the developer to handle the case of an existing resource so that it is not accidentally lost through an overwrite.
+
+It is also very important when choosing the name of your paths to pick an identifier
+that is very specific and unique to your project. Currently, account storage paths are global,
+so there is a chance that projects could use the same storage paths, which could cause path conflicts!
+This could be a headache for you, so choose unique path names to avoid this problem.
+
+Try removing the line of code that saves `newHello` to storage.
+You should see an error for `newHello` that says `loss of resource`.
+This means that you are not handling the resource properly.
+If you ever see this error in any of your programs, it means there is a resource somewhere
+that is not being explicitly stored or destroyed, meaning the program is invalid.
+
+Add the line back to make the contract check properly.
+
+In this case, this is the first transaction we have run with the selected account,
+so we know that the storage spot at `/storage/HelloAssetTutorial` is empty.
+In real applications, we would likely perform necessary checks and actions with the location we are storing to
+to make sure we don't abort the transaction because of an accidental overwrite.
+
+Now that you have deployed the contract, account `0x02` should have the newly created `HelloWorld.HelloAsset`
+resource stored in its storage. Let's check to make sure this is true with a transaction.
+
+### Interacting with a resource
+
+<Callout type="info">
+
+Open the transaction named `Load Hello`.
+
+<br />
+
+`Load Hello` should contain the following code:
+
+</Callout>
+
+```cadence:title=LoadHello.cdc
+import HelloWorld from 0x02
+
+// This transaction calls the "hello" method on the HelloAsset object
+// that is stored in the account's storage by removing that object
+// from storage, calling the method, and then putting it back in storage
+
+transaction {
+
+    prepare(acct: AuthAccount) {
+
+        // load the resource from storage, specifying the type to load it as
+        // and the path where it is stored
+        let helloResource <- acct.load<@HelloWorld.HelloAsset>(from: /storage/HelloAssetTutorial)
+
+        // We use optional chaining (?) because the value in storage
+        // may or may not exist, and thus is considered optional.
+        log(helloResource?.hello())
+
+        // Put the resource back in storage at the same spot
+        // We use the force-unwrap operator `!` to get the value
+        // out of the optional. It aborts if the optional is nil
+        acct.save(<-helloResource!, to: /storage/HelloAssetTutorial)
+    }
+}
+```
+
+This transaction imports the `HelloWorld` definitions from the account we just deployed them to, removes the `HelloAsset` object from storage,
+and calls the `hello()` function of the stored `HelloAsset` resource.
+
+This transaction also is our first to use the `prepare` phase!
+The `prepare` phase is the only place that has access to the signing accounts' [private `AuthAccount` object](/cadence/language/accounts/#authaccount).
+`AuthAccount` has special methods that allow saving to and loading from `/storage/`,
+and creating `/private/` and `/public/` links to the objects in `/storage/`,
+called [capabilities](/cadence/language/capability-based-access-control) (more on these later).
+
+The `execute` phase does not have access to `AuthAccount` and thus can only use objects
+that were removed from the `AuthAccount` in the `prepare` phase or created in the `prepare` phase.
+
+By not allowing the execute phase to access account storage,
+we can statically verify which assets and areas of the signers' storage a given transaction can modify.
+Browser wallets and applications that submit transactions for users can use this to show what a transaction could alter,
+giving users information about transactions that wallets will be executing for them, and confidence that they aren't getting fed
+a malicious or dangerous transaction from an app or wallet.
+
+You can have multiple signers of a transaction by clicking multiple account avatars in the playground,
+but the number of parameters of the prepare block of the transaction
+NEEDS to be the same as the number of signers. If not, this will cause an error.
+
+To remove an object from storage, we use the `load` method.
+
+```cadence
+let helloResource <- acct.load<@HelloWorld.HelloAsset>(from: /storage/HelloAssetTutorial)
+```
+
+If no object of the specified type is stored under the given path, the function returns `nil`. (This is an [Optional](/cadence/language/values-and-types/#optionals),
+a special type of data that we will cover later)
+
+If there is an object of the specified type at the path, the function returns that object
+and the storage will no longer contain an object under the given path.
+
+The type parameter for the object type to load is contained in `<>`.
+A type argument for the parameter must be provided explicitly, which is `@HelloWorld.HelloAsset` here.
+(Note the `@` symbol to specify that it is a resource)
+
+The path `from` must be a storage path, i.e., only the domain `/storage/` is allowed.
+
+Next, we call the `hello` function and log the output.
+
+```cadence
+log(helloResource?.hello())
+```
+
+We use `?` because the values in the storage are returned as [optionals](/cadence/language/values-and-types/#optionals).
+Optionals are values that can represent the absence of a value.
+Optionals have two cases: either there is a value of the specified type, or there is nothing (`nil`).
+An optional type is declared using the `?` suffix.
+
+```cadence
+let newResource: HelloAsset?  // could either have a value of type `HelloAsset`
+                              // or it could have a value of `nil`
+```
+
+Optionals allow developers to account for `nil` cases more gracefully.
+Here, we explicitly have to account for the possibility that the `helloResource` object we got with `load` is `nil`
+(because `load` will return `nil` if there is nothing there to load).
+
+Using `?` "unwraps" the optional, meaning that it gets the value if it is there, before calling `hello`,
+but only if the value isn't `nil`. If the value is nil, the `?` returns `nil`.
+
+Because `?` is used when calling the `hello` function, the function call only happens if the stored value is not `nil`.
+In this case, the result of the `hello` function will be returned as an optional.
+However, if the stored value was `nil`, the function call would not occur and the result is `nil`.
+
+Next, we use `save` again to put the object back in storage in the same spot:
+
+```cadence
+acct.save(<-helloResource!, to: /storage/HelloAssetTutorial)
+```
+
+Remember, `helloResource` is still an optional, so we have to handle the possibility that it is `nil`.
+Here, we use the force-unwrap operator (`!`). This operator gets the value in the optional if it contains a value,
+and aborts the entire transaction if the object is `nil`.
+It is a more risky way of dealing with optionals, but if your program is ever in a state where a value being `nil`
+would defeat the purpose of the whole transaction, then the force-unwrap operator might be a good choice to deal with that.
+
+Refer to [Optionals In Cadence](/cadence/language/values-and-types/#optionals) to learn more about optionals and how they are used.
+
+<Callout type="info">
+
+Select account `0x02` as the only signer. Click the `Send` button to submit
+the transaction.
+
+</Callout>
+
+You should see something like this:
+
+```
+"Hello, World!"
+```
+
+### Creating Capabilities and References to Stored Resources
+
+---
+
+In this example, we create a link and reference to your `HelloAsset` resource object, then use that reference to call the `hello` function.
+A detailed explanation of what is happening in this transaction is below the transaction code so, if you feel lost, keep reading!
+
+<Callout type="info">
+
+Open the transaction named `Create Link`.
+
+<br />
+
+`Create Link` should contain the following code:
+
+</Callout>
+
+```cadence:title=CreateLink
+import HelloWorld from 0x02
+
+// This transaction creates a new capability
+// for the HelloAsset resource in storage
+// and adds it to the account's public area.
+//
+// Other accounts and scripts can use this capability
+// to create a reference to the private object to be able to
+// access its fields and call its methods.
+
+transaction {
+  prepare(account: AuthAccount) {
+
+    // Create a public capability by linking the capability to
+    // a `target` object in account storage.
+    // The capability allows access to the object through an
+    // interface defined by the owner.
+    // This does not check if the link is valid or if the target exists.
+    // It just creates the capability.
+    // The capability is created and stored at /public/Hello, and is
+    // also returned from the function.
+    let capability = account.link<&HelloWorld.HelloAsset>(/public/HelloAssetTutorial, target: /storage/HelloAssetTutorial)
+
+    // Use the capability's borrow method to create a new reference
+    // to the object that the capability links to
+    // We use optional chaining "??" to get the value because
+    // result of the borrow could fail, so it is an optional.
+    // If the optional is nil,
+    // the panic will happen with a descriptive error message
+    let helloReference = capability.borrow()
+      ?? panic("Could not borrow a reference to the hello capability")
+
+    // Call the hello function using the reference
+    // to the HelloAsset resource.
+    //
+    log(helloReference.hello())
+  }
+}
+```
+
+<Callout type="info">
+
+Ensure account `0x02` is still selected as a transaction signer. <br />
+Click the `Send` button to send the transaction.
+
+</Callout>
+
+You should see `"Hello, World"` show up in the console again.
+You might be confused that we were able to call a method on the `HelloAsset` object
+without actually being directly in control of it!
+It is also stored in the `/storage/` domain of the account, which should be private.
+
+This is because we created a [**capability**](/cadence/language/capability-based-access-control/) for the `HelloAsset` object.
+Capabilities are kind of like pointers in other languages.
+
+
+## Next Steps
+
+[Tutorial 3]()

@@ -1,0 +1,173 @@
+
+---
+archived: false
+draft: false
+title: 01 Creating and Deploying a Hello World Smart Contract
+description: In this tutorial, we will learn how to create a smart contract and deploy it to the blockchain using the Flow Developer Playground.
+date: 2022-04-29
+meta:
+  keywords:
+    - article
+    - Flow
+    - cadence
+    - smart contract
+    - transaction
+tags: 
+  - reference
+  - cadence
+  - smart contract
+  - transaction
+socialImageTitle: Creating and Deploying a Hello World Smart Contract
+socialImageDescription: Learn how to create and deploy a cadence smart contract using the Flow Payground.
+
+---
+
+# Cadence Tutorial 1: Creating and Deploying a Hello World Smart Contract
+
+## Final outcome
+
+![Hello World Smart Contract](final-outcome.png)
+
+## Learning expectations
+
+After this tutorial, you will be able to create a simple Hello World smart contract using the Cadence programming language and deploy that smart contract to the Flow Developer Playground
+
+## Pre-requisites
+
+This is a basic tutorial and has no prerequisites.
+
+## Steps
+
+### Creating and deploying a Hello World Smart Contract
+
+In this tutorial, we will be creating a Hello World smart contract and deploying it the Flow Playground which simulates the Flow Blockchain.
+
+1. Using the Chrome browser, head over to [https://play.onflow.org/](https://play.onflow.org/).
+2. On the panel on the left of your screen, you will see a list of different accounts. Select account 0x01.
+3. Delete the code that is there and enter the following:
+
+```cadence:title=HelloWorld.cdc
+pub contract HelloWorld {
+
+    pub let greeting: String
+
+    init() {
+      self.greeting = "Hello, World!"
+    }
+
+    pub fun hello(): String {
+        return self.greeting
+    }
+}
+```
+
+4. Next, deploy the smart contract by clicking the green deploy button on the top right corner.
+
+<Callout type="info">
+
+Make sure that the account `0x01` tab is selected and that the
+`HelloWorld.cdc` file is in the editor. <br />
+Click the deploy button to deploy the contents of the editor to account `0x01`.
+
+</Callout>
+
+![Deploy Contract](deploybox.png)
+
+You should see a log in the output area indicating that the deployment succeeded.
+
+    Deployed Contract To: 0x01
+
+
+Congratulations! You have just deployed your first smart contract using the Cadence Programming Language.
+
+Let's take a step back and analyze the code we have just deployed.
+
+First, we declare our smart contract named HelloWorld using `pub contract HelloWorld`.
+
+Next, we declare a public member variable of the type `String` using the code `pub let greeting: String`. Cadence is a strongly typed language so all variables and methods/functions must have a type. `pub` short for public is our access modifier. Because our variable has been declared public, anyone can read it. The pub keyword is an example of an access control specification meaning that it can be accessed in all scopes, but not written to in all scopes. You can also use access(all) interchangeably with pub if you prefer something more descriptive. Please refer to the [Access Control section of the language reference](/cadence/language/access-control/) to learn more about the different levels of access control permitted in Cadence.
+
+We declare our variable with the keyword `let` which in Cadence indicates that it is a constant. If we declared it using the keyword `var` it would be possible to reassign the variable to another value later in our smart contract.
+
+Inside the `init()` function, we assign the String "Hello World!" to our greeting variable. Every smart contract in Cadence must have an `init()` function, which is called once when the smart contract is deployed and never again. Objects similar to contracts, such as other [composite types like structs or resources](/cadence/language/composite-types/), require that the init() function initialize any fields that are declared in a composite type.
+
+Lastly, we declare a public function `hello()` that returns a String.
+
+Now that we have deployed the HelloWorld smart contract to our 0x01, let's create a transaction that calls the `hello()` function. 
+
+### Creating a transaction
+
+<Callout type="info">
+
+Open the transaction named `Say Hello` <br />
+`Say Hello` should contain this code:
+
+</Callout>
+
+```cadence:title=SayHello.cdc
+import HelloWorld from 0x01
+
+transaction {
+
+    // No need to do anything in prepare because we are not working with
+    // account storage.
+    prepare(acct: AuthAccount) {}
+
+    // In execute, we simply call the hello function
+    // of the HelloWorld contract and log the returned String.
+    execute {
+        log(HelloWorld.hello())
+    }
+}
+```
+
+This is a Cadence **transaction**. A transaction can contain arbitrary code that imports from other accounts,
+interacts with account storage, interacts with other accounts, and more.
+
+To interact with a smart contract, the transaction first needs to import that smart contract
+by retrieving its definition from the address where it is stored. This imports the interface definitions, resource definitions,
+and public functions from that contract so that the transaction can use them
+to interact with the contract itself or with other accounts that utilize that contract.
+
+To import a smart contract from another account,
+you type this line at the top of your transaction:
+
+```cadence
+import {ContractName} from {Address}
+```
+
+Now, all of the public fields, types, and functions defined by that contract
+are available within your transaction by using the `ContractName.member` syntax.
+
+#### Transaction Structure
+
+Transactions are divided into two main phases, `prepare` and `execute`.
+
+1. The `prepare` phase is required but is not used here. We'll cover this phase later on.
+2. The `execute` phase is the main body of a transaction. It can call functions on external contracts and objects
+   and perform operations on data that was initialized in the transaction.
+
+In this transaction, we are importing the contract from the address that it was deployed to and calling its `hello` function.
+
+<Callout type="info">
+
+In the box at the top right of the editor, select Account `0x01` as the
+transaction signer. <br />
+Click the `Send` button to submit the transaction
+
+</Callout>
+
+![Deploy Contract](deploybox.png)
+
+You should see something like this:
+
+```
+"Hello, World!"
+```
+
+Congratulations, you just executed your first Cadence transaction! :100:
+
+
+## Next Steps
+
+[Tutorial 2 - Creating and Interacting with Resources](/cadence/tutorial/02-Creating-and-interating-with-resources.mdx)
+
